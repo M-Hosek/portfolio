@@ -29,7 +29,13 @@
 
   function smooth(t) { return t * t * (3 - 2 * t); }
 
-  /* 2D value noise in [0,1], bilinear over a hashed integer lattice. */
+  /* 2D value noise, bilinear over a hashed integer lattice. hash2 actually
+     returns [0, 0.5) — `h >> 16` sign-extends so bit 31 of the XOR is always
+     0 and >>> 0 never reaches 2^31 — which is why noise2's result is used
+     with `* Math.PI * 4` (a full turn over the doubled range) rather than
+     `* Math.PI * 2`. Do not "fix" the shift to `>>>`: that would double the
+     hashed range and, combined with the existing `* 4`, sweep two full
+     turns instead of one, silently changing the artwork. */
   function noise2(x, y) {
     var x0 = Math.floor(x), y0 = Math.floor(y);
     var fx = smooth(x - x0), fy = smooth(y - y0);
@@ -62,7 +68,9 @@
     scifi = parseColor(cs.getPropertyValue('--scifi')) || scifi;
   }
 
-  /* ---------- Particles: parallel typed arrays, zero per-frame allocation ---------- */
+  /* ---------- Particles: parallel typed arrays, no per-frame particle-object
+     churn (draw() still allocates rgba() strings per frame; the typed
+     arrays only avoid the allocation that mattered: per-particle objects) ---------- */
 
   var count = 0;
   var px = null, py = null, tint = null;  // tint: 0 = eco, 1 = scifi
@@ -195,16 +203,22 @@
   readAccents();
   resize();
 
+  /* Pause-path listeners are registered unconditionally, even when reduced
+     motion is active at load: start() independently guards on
+     reduceMotion.matches, so this stays inert until motion is allowed, but
+     if the user later toggles reduced motion off mid-session the loop must
+     already be able to pause off-screen/hidden rather than running forever. */
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      onScreen = entries[0].isIntersecting;
+      sync();
+    }, { threshold: 0 }).observe(canvas);
+  }
+  document.addEventListener('visibilitychange', sync);
+
   if (reduceMotion.matches) {
     draw();  // one static frame, no loop
   } else {
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (entries) {
-        onScreen = entries[0].isIntersecting;
-        sync();
-      }, { threshold: 0 }).observe(canvas);
-    }
-    document.addEventListener('visibilitychange', sync);
     sync();
   }
 
