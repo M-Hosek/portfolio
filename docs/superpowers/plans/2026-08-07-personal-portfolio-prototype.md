@@ -379,7 +379,7 @@ git commit -m "feat: add light/dark/system theme mapping"
 
 **Interfaces:**
 - Consumes: semantic colors from `themes.css`, scale/spacing from `tokens.css`.
-- Produces: element defaults and three layout primitives used by every page â€” `.wrap` (centered max-width container), `.prose` (measure-constrained text column), `.stack` (vertical rhythm). Also the global `:focus-visible` ring, `.skip-link`, `.visually-hidden`, and the `@media print` baseline.
+- Produces: element defaults and three layout primitives used by every page — `.wrap` (centered max-width container), `.prose` (measure-constrained text column), `.stack` (vertical rhythm). Also the global `:focus-visible` ring, `.skip-link`, `.visually-hidden`, and the `@media print` baseline.
 
 - [ ] **Step 1: Write `assets/css/base.css`**
 
@@ -440,7 +440,7 @@ hr {
   margin-block: var(--sp-7);
 }
 
-/* Focus â€” 2px ring in the sci-fi accent, both themes */
+/* Focus — 2px ring in the sci-fi accent, both themes */
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
@@ -462,7 +462,7 @@ hr {
 
 main { flex: 1 0 auto; padding-block: var(--sp-8); }
 
-/* Skip link â€” first focusable element on every page */
+/* Skip link — first focusable element on every page */
 .skip-link {
   position: absolute;
   left: var(--sp-4);
@@ -498,7 +498,7 @@ main { flex: 1 0 auto; padding-block: var(--sp-8); }
   }
 }
 
-/* Print baseline â€” cv.html extends this */
+/* Print baseline — cv.html extends this */
 @media print {
   body { background: #fff; color: #000; }
   .site-header, .site-footer, .skip-link, .hero-canvas { display: none !important; }
@@ -637,7 +637,7 @@ git commit -m "feat: add base stylesheet and layout primitives"
   flex-wrap: wrap;
 }
 
-/* ---------- Section labels â€” monospace schematic feel ---------- */
+/* ---------- Section labels — monospace schematic feel ---------- */
 
 .section-label {
   font-family: var(--font-mono);
@@ -833,13 +833,13 @@ git commit -m "feat: add component stylesheet"
 
 **Interfaces:**
 - Consumes: the `data-theme` contract from `themes.css` (`light`, `dark`, or attribute absent for system).
-- Produces: the global `window.PortfolioTheme` with this exact shape â€” later tasks call it verbatim:
-  - `PortfolioTheme.get()` â†’ `"system" | "light" | "dark"`
-  - `PortfolioTheme.set(mode)` â€” applies and persists
-  - `PortfolioTheme.cycle()` â†’ the new mode; order is `system â†’ light â†’ dark â†’ system`
-  - `PortfolioTheme.resolved()` â†’ `"light" | "dark"`, the mode actually in effect right now
-  - `PortfolioTheme.attachToggle(buttonEl)` â€” wires a button: click cycles, and label/icon stay in sync
-  - `PortfolioTheme.onChange(fn)` â€” registers `fn(resolvedMode)`, called on every change including system-preference changes. `generative.js` uses this to re-read accent colors.
+- Produces: the global `window.PortfolioTheme` with this exact shape — later tasks call it verbatim:
+  - `PortfolioTheme.get()` → `"system" | "light" | "dark"`
+  - `PortfolioTheme.set(mode)` — applies and persists
+  - `PortfolioTheme.cycle()` → the new mode; order is `system → light → dark → system`
+  - `PortfolioTheme.resolved()` → `"light" | "dark"`, the mode actually in effect right now
+  - `PortfolioTheme.attachToggle(buttonEl)` — wires a button: click cycles, and label/icon stay in sync
+  - `PortfolioTheme.onChange(fn)` — registers `fn(resolvedMode)`, called on every change including system-preference changes. `generative.js` uses this to re-read accent colors.
 
 **Load requirement:** this file is a **blocking classic script in `<head>`**, before any stylesheet-dependent paint, so the stored theme is applied before first paint. Do not add `defer` or `type="module"`.
 
@@ -960,7 +960,7 @@ Load the stub `index.html` with `tokens.css`, `themes.css`, `base.css` and `<scr
 
 Expected:
 - Initial state is `system`; `<html>` has no `data-theme` attribute; the button shows the monitor glyph with `aria-label` "Theme: system. Activate to switch to light."
-- Clicking cycles system â†’ light â†’ dark â†’ system, the page repaints each time, and the glyph and `aria-label` update in step.
+- Clicking cycles system → light → dark → system, the page repaints each time, and the glyph and `aria-label` update in step.
 - After landing on `dark`, reload: the page comes back dark with **no flash of light** and `localStorage.getItem('portfolio-theme')` is `"dark"`.
 - With mode `system` and DevTools emulating a switch from light to dark, the page repaints without a click.
 - Reaching the button with Tab and pressing Space or Enter cycles it the same way.
@@ -983,14 +983,14 @@ git commit -m "feat: add three-state theme controller"
 
 **Interfaces:**
 - Consumes: `PortfolioTheme.attachToggle` from Task 6; the class contract from Task 5.
-- Produces: the page contract every HTML file in Tasks 9â€“14 must satisfy:
+- Produces: the page contract every HTML file in Tasks 9–14 must satisfy:
   - `<body>` carries `data-page="<slug>"` where slug is one of `home`, `research`, `projects`, `writing`, `cv`, `contact` (post pages use `writing`).
-  - `<body>` carries `data-root="<prefix>"` â€” `""` for root-level pages, `"../../"` for `content/posts/*.html`. All injected links are prefixed with it.
+  - `<body>` carries `data-root="<prefix>"` — `""` for root-level pages, `"../../"` for `content/posts/*.html`. All injected links are prefixed with it.
   - The page contains `<header class="site-header" data-site-header></header>` and `<footer class="site-footer" data-site-footer></footer>` as empty elements; this script fills them.
   - A `<noscript>` nav is written by hand into each page (Task 9 shows the exact markup) so the site stays navigable and crawlable without JS.
-- Produces the exported constant `NAV` (module-internal) â€” the single place nav items are edited.
+- Produces the exported constant `NAV` (module-internal) — the single place nav items are edited.
 
-**Note on the no-JS path:** injecting chrome from JS means crawlers and no-JS users see nothing unless the `<noscript>` block is present. It is not optional â€” it is what keeps the SEO â‰¥ 95 success criterion reachable. Every page gets it.
+**Note on the no-JS path:** injecting chrome from JS means crawlers and no-JS users see nothing unless the `<noscript>` block is present. It is not optional — it is what keeps the SEO ≥ 95 success criterion reachable. Every page gets it.
 
 - [ ] **Step 1: Write `assets/js/layout.js`**
 
@@ -1067,9 +1067,9 @@ Build a probe from the stub `index.html`: `<body data-page="research" data-root=
 
 Expected:
 - The header renders the brand, five nav links, and a working theme toggle.
-- The **Research** link â€” and only that one â€” carries `aria-current="page"` and shows the green underline.
+- The **Research** link — and only that one — carries `aria-current="page"` and shows the green underline.
 - The footer shows the current year and a Contact link.
-- Tab order runs brand â†’ the five nav links â†’ theme toggle, with a visible cyan ring at each stop.
+- Tab order runs brand → the five nav links → theme toggle, with a visible cyan ring at each stop.
 - No console errors.
 
 Then change the probe to `data-page="cv"` and confirm the current-page marker moves to **CV**.
@@ -1092,14 +1092,14 @@ git commit -m "feat: add shared header and footer injection"
 
 **Interfaces:**
 - Consumes: `PortfolioTheme.onChange` from Task 6; the `--eco` and `--scifi` custom properties from Task 3 (read via `getComputedStyle`, so the canvas re-tints when the theme changes).
-- Produces: a self-starting effect bound to `canvas.hero-canvas[data-generative]`. No exported API â€” the only integration point is that one element. If the element is absent, the script does nothing.
+- Produces: a self-starting effect bound to `canvas.hero-canvas[data-generative]`. No exported API — the only integration point is that one element. If the element is absent, the script does nothing.
 
-**Concept:** "pollen drift" â€” particles advected by a value-noise flow field, with thin lines drawn between pairs within ~80px, opacity falling off with distance. Tinted per-particle between the ecology green and the sci-fi cyan.
+**Concept:** "pollen drift" — particles advected by a value-noise flow field, with thin lines drawn between pairs within ~80px, opacity falling off with distance. Tinted per-particle between the ecology green and the sci-fi cyan.
 
 - [ ] **Step 1: Write `assets/js/generative.js`**
 
 ```js
-/* Pollen drift â€” a value-noise flow field on canvas 2D.
+/* Pollen drift — a value-noise flow field on canvas 2D.
    Decorative only: aria-hidden, pointer-events: none, no input. */
 (function () {
   'use strict';
@@ -1110,7 +1110,7 @@ git commit -m "feat: add shared header and footer injection"
   var ctx = canvas.getContext('2d', { alpha: true });
   if (!ctx) return;
 
-  var LINK_DIST = 80;         // px â€” connect particles closer than this
+  var LINK_DIST = 80;         // px — connect particles closer than this
   var LINK_DIST_SQ = LINK_DIST * LINK_DIST;
   var TARGET_FPS = 30;
   var FRAME_MS = 1000 / TARGET_FPS;
@@ -1361,11 +1361,11 @@ with `<script src="assets/js/generative.js" defer></script>`.
 
 Expected:
 - Particles drift slowly with connecting hairlines; nothing jitters or stutters.
-- Text in `.hero-body` stays fully readable over the canvas â€” the canvas sits at `z-index: -1`.
-- Clicking on the hero text selects text (the canvas does not intercept â€” `pointer-events: none`).
-- **Reduced motion:** with DevTools emulating `prefers-reduced-motion: reduce`, reload â€” a single static frame renders and the Performance panel shows no ongoing `requestAnimationFrame` work.
+- Text in `.hero-body` stays fully readable over the canvas — the canvas sits at `z-index: -1`.
+- Clicking on the hero text selects text (the canvas does not intercept — `pointer-events: none`).
+- **Reduced motion:** with DevTools emulating `prefers-reduced-motion: reduce`, reload — a single static frame renders and the Performance panel shows no ongoing `requestAnimationFrame` work.
 - **Off-screen pause:** scroll past the hero; the frame rate drops to zero in the Performance panel. Scroll back and it resumes.
-- **Hidden pause:** switch to another tab and back â€” same pause/resume.
+- **Hidden pause:** switch to another tab and back — same pause/resume.
 - **Theme re-tint:** cycle the theme toggle; particle and line colors change to the other palette's accents without a reload.
 - **Resize:** drag the window narrow and wide; the canvas stays sharp (no blurring on a HiDPI display) and re-seeds only on a large change.
 
@@ -1386,11 +1386,11 @@ git commit -m "feat: add pollen-drift generative hero canvas"
 
 **Interfaces:**
 - Consumes: all four stylesheets, all three scripts, and the `data-page` / `data-root` / `[data-site-header]` / `[data-site-footer]` contract from Task 7.
-- Produces: **the canonical page shell.** Tasks 10â€“14 reproduce this shell verbatim, changing only `<title>`, the meta description, `data-page`, and the contents of `<main>`. The shell is: skip link â†’ empty `.site-header` â†’ `<main id="main">` â†’ empty `.site-footer` â†’ `<noscript>` nav.
+- Produces: **the canonical page shell.** Tasks 10–14 reproduce this shell verbatim, changing only `<title>`, the meta description, `data-page`, and the contents of `<main>`. The shell is: skip link → empty `.site-header` → `<main id="main">` → empty `.site-footer` → `<noscript>` nav.
 
 - [ ] **Step 1: Create `assets/img/favicon.svg`**
 
-A leaf-and-node glyph â€” the ecology and sci-fi motifs in one mark. Colors are hardcoded here (an SVG favicon cannot read page custom properties).
+A leaf-and-node glyph — the ecology and sci-fi motifs in one mark. Colors are hardcoded here (an SVG favicon cannot read page custom properties).
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
@@ -1409,8 +1409,8 @@ A leaf-and-node glyph â€” the ecology and sci-fi motifs in one mark. Colors
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Your Name â€” Researcher and Developer</title>
-  <meta name="description" content="Personal site of Your Name â€” research in ecology and computation, plus open-source projects and writing.">
+  <title>Your Name — Researcher and Developer</title>
+  <meta name="description" content="Personal site of Your Name — research in ecology and computation, plus open-source projects and writing.">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/tokens.css">
   <link rel="stylesheet" href="assets/css/themes.css">
@@ -1455,7 +1455,7 @@ A leaf-and-node glyph â€” the ecology and sci-fi motifs in one mark. Colors
       <h2 class="section-label">About</h2>
       <div class="prose stack">
         <p>I study how ecological systems behave at scale, and I build the
-        software that makes those questions tractable. Placeholder copy â€”
+        software that makes those questions tractable. Placeholder copy —
         replace with two or three sentences that frame both halves.</p>
         <p>Most of my work lives in the open: papers on the
         <a href="research.html">research page</a>, code on the
@@ -1479,8 +1479,8 @@ Serve the directory (`python -m http.server 8000`) and open `http://localhost:80
 Expected:
 - Header, nav with **no** current-page marker (home is reached via the brand), theme toggle, and footer all render.
 - The canvas animates behind the hero text, which stays readable in both themes.
-- The three quick-link buttons navigate to pages that do not exist yet â€” a 404 here is expected until Tasks 10â€“12.
-- Tab from page load: skip link â†’ brand â†’ 5 nav links â†’ theme toggle â†’ 3 quick links â†’ the two body links â†’ footer contact link. Every stop shows a visible ring.
+- The three quick-link buttons navigate to pages that do not exist yet — a 404 here is expected until Tasks 10–12.
+- Tab from page load: skip link → brand → 5 nav links → theme toggle → 3 quick links → the two body links → footer contact link. Every stop shows a visible ring.
 - Disabling JavaScript still shows a usable nav list (unstyled) and all body content.
 - No console errors.
 
@@ -1510,7 +1510,7 @@ git commit -m "feat: build home page with hero canvas"
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Research â€” Your Name</title>
+  <title>Research — Your Name</title>
   <meta name="description" content="Research interests, publications, and talks by Your Name.">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/tokens.css">
@@ -1543,15 +1543,15 @@ git commit -m "feat: build home page with hero canvas"
       <ul class="glyph-list prose">
         <li>
           <svg class="glyph" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><path d="M3 13c0-6 4-9 10-10 0 6-4 10-10 10z"/><path d="M3 13c2-3 4-4 7-5.5"/></svg>
-          <span>Placeholder interest one â€” population dynamics at landscape scale.</span>
+          <span>Placeholder interest one — population dynamics at landscape scale.</span>
         </li>
         <li>
           <svg class="glyph" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><ellipse cx="8" cy="8" rx="7" ry="3"/><circle cx="8" cy="8" r="1.6" fill="currentColor" stroke="none"/></svg>
-          <span>Placeholder interest two â€” simulation methods for coupled systems.</span>
+          <span>Placeholder interest two — simulation methods for coupled systems.</span>
         </li>
         <li>
           <svg class="glyph" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><circle cx="4" cy="4" r="1.8"/><circle cx="12" cy="12" r="1.8"/><path d="M5.5 5.5l5 5"/></svg>
-          <span>Placeholder interest three â€” reproducible scientific tooling.</span>
+          <span>Placeholder interest three — reproducible scientific tooling.</span>
         </li>
       </ul>
     </section>
@@ -1615,7 +1615,7 @@ git commit -m "feat: build home page with hero canvas"
 </html>
 ```
 
-Note: `generative.js` is intentionally **not** loaded here â€” the canvas is home-only.
+Note: `generative.js` is intentionally **not** loaded here — the canvas is home-only.
 
 - [ ] **Step 2: Verify**
 
@@ -1655,7 +1655,7 @@ git commit -m "feat: build research page"
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Projects â€” Your Name</title>
+  <title>Projects — Your Name</title>
   <meta name="description" content="Open-source projects, tools, and demos built by Your Name.">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/tokens.css">
@@ -1683,7 +1683,7 @@ git commit -m "feat: build research page"
   <main id="main" class="wrap stack-lg">
     <div class="prose stack">
       <h1>Projects</h1>
-      <p>Placeholder intro â€” a sentence about what kind of software you build
+      <p>Placeholder intro — a sentence about what kind of software you build
       and why.</p>
     </div>
 
@@ -1754,7 +1754,7 @@ Open `http://localhost:8000/projects.html`.
 Expected:
 - **Projects** carries the current-page underline.
 - Cards lay out 3 per row at ~1200px, 2 at ~800px, and 1 below ~500px, with equal-height cards and their link rows bottom-aligned (the `flex: 1` on `.card p` does this).
-- Hovering a card turns its border green; the card body is not a link target â€” only the explicit Repo/Demo links are.
+- Hovering a card turns its border green; the card body is not a link target — only the explicit Repo/Demo links are.
 - Tags render as small monospace outlined chips.
 - No console errors.
 
@@ -1775,7 +1775,7 @@ git commit -m "feat: build projects page"
 
 **Interfaces:**
 - Consumes: the canonical shell from Task 9; `.entry-list`, `.entry`, `.entry-meta` from Task 5.
-- Produces: the **post template**. Post pages sit two levels deep, so they set `data-root="../../"` â€” this is the only place that attribute is non-empty, and `layout.js` (Task 7) uses it to prefix every injected link. Their asset `<link>` and `<script>` paths are correspondingly `../../assets/...`.
+- Produces: the **post template**. Post pages sit two levels deep, so they set `data-root="../../"` — this is the only place that attribute is non-empty, and `layout.js` (Task 7) uses it to prefix every injected link. Their asset `<link>` and `<script>` paths are correspondingly `../../assets/...`.
 
 - [ ] **Step 1: Write `writing.html`**
 
@@ -1785,7 +1785,7 @@ git commit -m "feat: build projects page"
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Writing â€” Your Name</title>
+  <title>Writing — Your Name</title>
   <meta name="description" content="Notes and essays on ecology, computation, and research practice.">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/tokens.css">
@@ -1846,7 +1846,7 @@ Note the `../../` prefixes throughout and `data-root="../../"`.
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hello, world â€” Your Name</title>
+  <title>Hello, world — Your Name</title>
   <meta name="description" content="A first placeholder post, and a template for the ones that follow.">
   <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../../assets/css/tokens.css">
@@ -1876,13 +1876,13 @@ Note the `../../` prefixes throughout and `data-root="../../"`.
       <p class="section-label">Post</p>
       <h1>Hello, world</h1>
       <p class="entry-meta">
-        <time datetime="2026-08-07">7 August 2026</time> Â· Your Name
+        <time datetime="2026-08-07">7 August 2026</time> · Your Name
       </p>
 
       <p>Placeholder body copy. This file is the template: copy it to
       <code>content/posts/&lt;slug&gt;.html</code>, change the title, the
       description, the <code>&lt;time&gt;</code> element in both places, and the
-      body â€” then add a matching entry to <code>writing.html</code>.</p>
+      body — then add a matching entry to <code>writing.html</code>.</p>
 
       <h2>A subheading</h2>
 
@@ -1907,7 +1907,7 @@ Open `http://localhost:8000/writing.html`, then follow the post link.
 
 Expected:
 - On both pages, **Writing** carries the current-page underline.
-- On the post page, every injected nav link resolves correctly from two levels deep â€” click **Research** from inside the post and it lands on `/research.html`, not `/content/posts/research.html`.
+- On the post page, every injected nav link resolves correctly from two levels deep — click **Research** from inside the post and it lands on `/research.html`, not `/content/posts/research.html`.
 - The brand link from inside the post returns to the site root.
 - Stylesheets and the theme toggle work identically on the post page; the theme choice persists across the navigation.
 - Article prose is measure-constrained; the "All posts" link returns to the index.
@@ -1986,8 +1986,8 @@ git commit -m "feat: build writing index and post template"
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CV â€” Your Name</title>
-  <meta name="description" content="Curriculum vitae of Your Name â€” education, positions, and selected work.">
+  <title>CV — Your Name</title>
+  <meta name="description" content="Curriculum vitae of Your Name — education, positions, and selected work.">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/tokens.css">
   <link rel="stylesheet" href="assets/css/themes.css">
@@ -2015,7 +2015,7 @@ git commit -m "feat: build writing index and post template"
     <div class="cv-header">
       <div>
         <h1>Your Name</h1>
-        <p class="entry-meta">Researcher and developer Â· City, Country</p>
+        <p class="entry-meta">Researcher and developer · City, Country</p>
       </div>
       <p class="cv-download"><a class="btn" href="#">Download PDF</a></p>
     </div>
@@ -2023,7 +2023,7 @@ git commit -m "feat: build writing index and post template"
     <section class="cv-section">
       <h2 class="section-label">Education</h2>
       <div class="cv-item">
-        <p class="cv-item-meta">2019â€”2024</p>
+        <p class="cv-item-meta">2019—2024</p>
         <div>
           <h3>PhD, Placeholder Field</h3>
           <p class="entry-meta">University Name</p>
@@ -2031,7 +2031,7 @@ git commit -m "feat: build writing index and post template"
         </div>
       </div>
       <div class="cv-item">
-        <p class="cv-item-meta">2015â€”2019</p>
+        <p class="cv-item-meta">2015—2019</p>
         <div>
           <h3>BSc, Placeholder Field</h3>
           <p class="entry-meta">University Name</p>
@@ -2042,7 +2042,7 @@ git commit -m "feat: build writing index and post template"
     <section class="cv-section">
       <h2 class="section-label">Positions</h2>
       <div class="cv-item">
-        <p class="cv-item-meta">2024â€”present</p>
+        <p class="cv-item-meta">2024—present</p>
         <div>
           <h3>Placeholder Role</h3>
           <p class="entry-meta">Institution Name</p>
@@ -2093,7 +2093,7 @@ Expected on screen:
 
 Expected in print preview:
 - Header, footer, skip link, and the "Download PDF" button are all absent.
-- Text is black on white regardless of the active theme â€” including when the page is in dark mode.
+- Text is black on white regardless of the active theme — including when the page is in dark mode.
 - External links show their URL in parentheses; no CV item is split across a page break.
 
 - [ ] **Step 4: Commit**
@@ -2114,7 +2114,7 @@ git commit -m "feat: build CV page with print styles"
 - Consumes: the canonical shell from Task 9; `.btn`, `.glyph-list`, `.glyph` from Task 5.
 - Produces: nothing other tasks depend on.
 
-**Design note:** the copy-to-clipboard handler is a short inline script at the end of this page rather than a fourth JS file â€” it is used on exactly one page, and the spec's file structure lists exactly three files in `assets/js/`. The email is a real `mailto:` link, so the page works with the button removed; the button is enhancement only and is hidden if the Clipboard API is unavailable.
+**Design note:** the copy-to-clipboard handler is a short inline script at the end of this page rather than a fourth JS file — it is used on exactly one page, and the spec's file structure lists exactly three files in `assets/js/`. The email is a real `mailto:` link, so the page works with the button removed; the button is enhancement only and is hidden if the Clipboard API is unavailable.
 
 - [ ] **Step 1: Write `contact.html`**
 
@@ -2124,8 +2124,8 @@ git commit -m "feat: build CV page with print styles"
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Contact â€” Your Name</title>
-  <meta name="description" content="Get in touch with Your Name â€” email, GitHub, ORCID.">
+  <title>Contact — Your Name</title>
+  <meta name="description" content="Get in touch with Your Name — email, GitHub, ORCID.">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/tokens.css">
   <link rel="stylesheet" href="assets/css/themes.css">
@@ -2240,7 +2240,7 @@ git commit -m "feat: build contact page"
 - Modify: any file the checks below turn up as failing
 
 **Interfaces:**
-- Consumes: every artifact from Tasks 1â€“14.
+- Consumes: every artifact from Tasks 1–14.
 - Produces: the signed-off prototype. This task is the gate for all seven success criteria in the spec.
 
 - [ ] **Step 1: Add `robots.txt`**
@@ -2263,13 +2263,13 @@ Expected: **zero errors** on all seven files. Warnings about trailing slashes or
 
 - [ ] **Step 3: Run Lighthouse on the home page**
 
-In Chrome DevTools â†’ Lighthouse, run a **desktop** audit against `http://localhost:8000/` (or the live Pages URL) in an incognito window with extensions disabled.
+In Chrome DevTools → Lighthouse, run a **desktop** audit against `http://localhost:8000/` (or the live Pages URL) in an incognito window with extensions disabled.
 
-Expected â€” all four must clear the spec's bar:
-- Accessibility â‰¥ 95
-- Performance â‰¥ 95
-- Best Practices â‰¥ 95
-- SEO â‰¥ 95
+Expected — all four must clear the spec's bar:
+- Accessibility ≥ 95
+- Performance ≥ 95
+- Best Practices ≥ 95
+- SEO ≥ 95
 
 If Accessibility falls short, the likeliest causes are a contrast pair that slipped or a missing `aria-label` on the theme toggle. If Performance falls short, check that the canvas is not running while off-screen.
 
@@ -2285,7 +2285,7 @@ Check these pairs with a contrast checker in **both** themes. The spec's bar is 
 | `--eco` on `--bg` (hover) | `#3F7B5F` / `#FBFAF6` | `#7FB89A` / `#0F1417` | 4.5:1 |
 | `--text-2` on `--surface` (card body) | `#5C5C5C` / `#FFFFFF` | `#A1A09A` / `#161B1F` | 4.5:1 |
 
-Expected: every row passes. If a row fails, darken the light accent or lighten the dark accent in `tokens.css` and re-check â€” the token is the only place to change it.
+Expected: every row passes. If a row fails, darken the light accent or lighten the dark accent in `tokens.css` and re-check — the token is the only place to change it.
 
 - [ ] **Step 5: Full keyboard traversal on every page**
 
@@ -2300,8 +2300,8 @@ Expected on every page:
 - [ ] **Step 6: Verify the theme across pages and reloads**
 
 Expected:
-- Set dark on `index.html`, navigate to all six other pages â€” each loads dark with no flash of light.
-- Reload each â€” still dark.
+- Set dark on `index.html`, navigate to all six other pages — each loads dark with no flash of light.
+- Reload each — still dark.
 - Cycle to `system` and confirm `localStorage.getItem('portfolio-theme')` is `"system"` and `<html>` has no `data-theme` attribute.
 - With mode `system`, flip the OS/DevTools color-scheme preference and confirm every page follows without a reload.
 
@@ -2327,13 +2327,13 @@ Expected: all seven pages are reachable at the public URL, assets load over HTTP
 
 Confirm each spec success criterion, by number, with the evidence gathered above:
 
-1. All six pages render with placeholder content â€” Steps 2, 5.
-2. Live on GitHub Pages â€” Step 8.
-3. Lighthouse â‰¥ 95 across all four categories â€” Steps 3, 8.
-4. Theme toggle works in all three states and persists â€” Step 6.
-5. Canvas animates, respects reduced motion, pauses when hidden â€” Task 8 Step 3, Step 7.
-6. Fully navigable by keyboard from skip link to footer â€” Step 5.
-7. W3C HTML validation passes on every page â€” Step 2.
+1. All six pages render with placeholder content — Steps 2, 5.
+2. Live on GitHub Pages — Step 8.
+3. Lighthouse ≥ 95 across all four categories — Steps 3, 8.
+4. Theme toggle works in all three states and persists — Step 6.
+5. Canvas animates, respects reduced motion, pauses when hidden — Task 8 Step 3, Step 7.
+6. Fully navigable by keyboard from skip link to footer — Step 5.
+7. W3C HTML validation passes on every page — Step 2.
 
 Do not report the prototype complete until every one of these has been observed directly.
 
@@ -2343,8 +2343,8 @@ Do not report the prototype complete until every one of these has been observed 
 
 Recorded here so the implementer does not rediscover them mid-task:
 
-- **JS-injected chrome vs. crawlability.** The spec asks for `layout.js` to inject the header and footer. That means no-JS clients and some crawlers see no navigation unless the `<noscript>` block is present, which is why every page carries one. If the SEO score still comes up short in Task 15, the fix is to hand-write the real `<nav>` into each page and reduce `layout.js` to only marking the active link â€” a small change confined to Task 7's file plus the seven page files.
+- **JS-injected chrome vs. crawlability.** The spec asks for `layout.js` to inject the header and footer. That means no-JS clients and some crawlers see no navigation unless the `<noscript>` block is present, which is why every page carries one. If the SEO score still comes up short in Task 15, the fix is to hand-write the real `<nav>` into each page and reduce `layout.js` to only marking the active link — a small change confined to Task 7's file plus the seven page files.
 - **`theme.js` must stay render-blocking.** Adding `defer` or `type="module"` to it reintroduces a flash of the wrong theme on load. This is the one script that is deliberately not deferred.
-- **The home page has no `aria-current` nav link.** Home is reached through the brand, which is not in `NAV`. This is intentional, not a bug â€” do not add a Home entry unless the design changes.
-- **Connection drawing is O(nÂ²).** At the capped 120 particles that is ~7,000 pair checks per frame at 30fps, which is comfortably within budget. If the particle cap is ever raised much beyond that, the pair loop needs spatial bucketing first.
-- **Site name and personal details are placeholders.** `SITE_NAME` in `assets/js/layout.js`, the email in `contact.html`, and the social URLs all say "Your Name" / `example.com`. They are content, not structure â€” fill them in after the prototype is signed off.
+- **The home page has no `aria-current` nav link.** Home is reached through the brand, which is not in `NAV`. This is intentional, not a bug — do not add a Home entry unless the design changes.
+- **Connection drawing is O(n²).** At the capped 120 particles that is ~7,000 pair checks per frame at 30fps, which is comfortably within budget. If the particle cap is ever raised much beyond that, the pair loop needs spatial bucketing first.
+- **Site name and personal details are placeholders.** `SITE_NAME` in `assets/js/layout.js`, the email in `contact.html`, and the social URLs all say "Your Name" / `example.com`. They are content, not structure — fill them in after the prototype is signed off.
