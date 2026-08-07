@@ -1,0 +1,54 @@
+/* Semantic color mapping. Three states: system (no attribute), light, dark. */
+
+:root {
+  --bg:      var(--c-light-bg);
+  --surface: var(--c-light-surface);
+  --text:    var(--c-light-text);
+  --text-2:  var(--c-light-text-2);
+  --border:  var(--c-light-border);
+  --eco:     var(--c-light-eco);
+  --scifi:   var(--c-light-scifi);
+  --focus:   var(--c-light-scifi);
+  color-scheme: light;
+}
+
+/* System preference is dark, and the user has not forced light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:      var(--c-dark-bg);
+    --surface: var(--c-dark-surface);
+    --text:    var(--c-dark-text);
+    --text-2:  var(--c-dark-text-2);
+    --border:  var(--c-dark-border);
+    --eco:     var(--c-dark-eco);
+    --scifi:   var(--c-dark-scifi);
+    --focus:   var(--c-dark-scifi);
+    color-scheme: dark;
+  }
+}
+
+/* User explicitly chose dark — wins regardless of system preference. */
+:root[data-theme="dark"] {
+  --bg:      var(--c-dark-bg);
+  --surface: var(--c-dark-surface);
+  --text:    var(--c-dark-text);
+  --text-2:  var(--c-dark-text-2);
+  --border:  var(--c-dark-border);
+  --eco:     var(--c-dark-eco);
+  --scifi:   var(--c-dark-scifi);
+  --focus:   var(--c-dark-scifi);
+  color-scheme: dark;
+}
+
+/* User explicitly chose light — wins regardless of system preference. */
+:root[data-theme="light"] {
+  --bg:      var(--c-light-bg);
+  --surface: var(--c-light-surface);
+  --text:    var(--c-light-text);
+  --text-2:  var(--c-light-text-2);
+  --border:  var(--c-light-border);
+  --eco:     var(--c-light-eco);
+  --scifi:   var(--c-light-scifi);
+  --focus:   var(--c-light-scifi);
+  color-scheme: light;
+}
