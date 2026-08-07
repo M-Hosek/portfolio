@@ -1,0 +1,63 @@
+/* Design tokens. Raw values only — semantic mapping lives in themes.css. */
+
+:root {
+  /* Raw palette — light */
+  --c-light-bg:        #FBFAF6;
+  --c-light-surface:   #FFFFFF;
+  --c-light-text:      #1A1A1A;
+  --c-light-text-2:    #5C5C5C;
+  --c-light-border:    #E5E2DA;
+  --c-light-eco:       #3F7B5F;
+  --c-light-scifi:     #1F6B7A;
+
+  /* Raw palette — dark */
+  --c-dark-bg:         #0F1417;
+  --c-dark-surface:    #161B1F;
+  --c-dark-text:       #ECEAE2;
+  --c-dark-text-2:     #A1A09A;
+  --c-dark-border:     #2A2F33;
+  --c-dark-eco:        #7FB89A;
+  --c-dark-scifi:      #7CC8D8;
+
+  /* Type scale — 1.250 major third */
+  --fs-0: 1rem;
+  --fs-1: 1.25rem;
+  --fs-2: 1.563rem;
+  --fs-3: 1.953rem;
+  --fs-4: 2.441rem;
+  --fs-sm: 0.875rem;
+  --fs-xs: 0.75rem;
+
+  --lh-body: 1.6;
+  --lh-heading: 1.25;
+  --measure: 70ch;
+
+  /* Font stacks */
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+               "Liberation Mono", monospace;
+
+  /* Spacing — 4px base */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+  --sp-9: 6rem;
+
+  /* Radii + layout */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --content-width: 68rem;
+
+  /* Motion */
+  --dur: 160ms;
+  --ease: cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur: 0ms; }
+}
