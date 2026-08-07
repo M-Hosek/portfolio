@@ -1,0 +1,251 @@
+/* ---------- Header + nav ---------- */
+
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.site-header .wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  min-height: 3.5rem;
+  flex-wrap: wrap;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-decoration: none;
+  margin-right: auto;
+}
+
+.brand:hover { color: var(--eco); }
+
+.site-nav ul {
+  display: flex;
+  gap: var(--sp-5);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.site-nav a {
+  color: var(--text-2);
+  text-decoration: none;
+  font-size: var(--fs-sm);
+  padding-block: var(--sp-2);
+  border-bottom: 2px solid transparent;
+}
+
+.site-nav a:hover { color: var(--text); }
+
+.site-nav a[aria-current="page"] {
+  color: var(--text);
+  border-bottom-color: var(--eco);
+}
+
+.theme-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.theme-toggle:hover { color: var(--text); border-color: var(--text-2); }
+.theme-toggle svg { width: 16px; height: 16px; }
+
+/* ---------- Footer ---------- */
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding-block: var(--sp-6);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+
+.site-footer .wrap {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+/* ---------- Section labels — monospace schematic feel ---------- */
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.section-label::after {
+  content: "";
+  flex: 1;
+  border-top: 1px dashed var(--border);
+}
+
+/* ---------- Cards ---------- */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: var(--sp-5);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  transition: border-color var(--dur) var(--ease);
+}
+
+.card:hover { border-color: var(--eco); }
+.card h3 { font-size: var(--fs-1); }
+.card p { color: var(--text-2); font-size: var(--fs-sm); flex: 1; }
+
+.card-links {
+  display: flex;
+  gap: var(--sp-4);
+  font-size: var(--fs-sm);
+}
+
+/* ---------- Tags ---------- */
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px var(--sp-2);
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font: inherit;
+  font-size: var(--fs-sm);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.btn:hover { border-color: var(--eco); color: var(--eco); }
+
+/* ---------- Entry lists (publications, talks, posts) ---------- */
+
+.entry-list { list-style: none; padding: 0; margin: 0; }
+
+.entry {
+  padding-block: var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.entry:last-child { border-bottom: 0; }
+.entry h3 { font-size: var(--fs-1); }
+.entry-meta { color: var(--text-2); font-size: var(--fs-sm); }
+.entry-meta .venue { font-style: italic; }
+.entry-links { display: flex; gap: var(--sp-4); font-size: var(--fs-sm); }
+
+/* Author highlight in publication author lists */
+.me { color: var(--text); font-weight: 650; }
+
+/* ---------- Inline glyphs ---------- */
+
+.glyph {
+  width: 16px;
+  height: 16px;
+  color: var(--text-2);
+  flex: none;
+}
+
+ul.glyph-list { list-style: none; padding: 0; margin: 0; }
+
+ul.glyph-list li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding-block: var(--sp-2);
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  padding-block: var(--sp-9);
+  overflow: hidden;
+}
+
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.hero-body { max-width: 44ch; }
+.hero-body h1 { font-size: var(--fs-4); }
+
+.tagline {
+  font-size: var(--fs-1);
+  color: var(--text-2);
+  margin-top: var(--sp-4);
+}
+
+.quick-links {
+  display: flex;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin-top: var(--sp-6);
+  list-style: none;
+  padding: 0;
+}
