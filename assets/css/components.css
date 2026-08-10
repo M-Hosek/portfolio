@@ -249,3 +249,45 @@ ul.glyph-list li {
   list-style: none;
   padding: 0;
 }
+
+/* ---------- CV ---------- */
+
+.cv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  padding-bottom: var(--sp-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.cv-section { margin-top: var(--sp-7); }
+
+.cv-item {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: var(--sp-4);
+  padding-block: var(--sp-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.cv-item:last-child { border-bottom: 0; }
+.cv-item h3 { font-size: var(--fs-1); }
+.cv-item-meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  padding-top: 0.35rem;
+}
+
+@media (max-width: 40rem) {
+  .cv-item { grid-template-columns: 1fr; gap: var(--sp-2); }
+}
+
+@media print {
+  .cv-item { break-inside: avoid; page-break-inside: avoid; }
+  .cv-section { break-inside: avoid-page; }
+  .cv-download { display: none !important; }
+  .cv-item, .cv-header { border-color: #ccc; }
+}
