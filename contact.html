@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact — Your Name</title>
+  <meta name="description" content="Get in touch with Your Name — email, GitHub, ORCID.">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/themes.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <script src="assets/js/theme.js"></script>
+</head>
+<body data-page="contact" data-root="">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" data-site-header></header>
+
+  <noscript>
+    <nav class="wrap" aria-label="Primary">
+      <ul>
+        <li><a href="research.html">Research</a></li>
+        <li><a href="projects.html">Projects</a></li>
+        <li><a href="writing.html">Writing</a></li>
+        <li><a href="cv.html">CV</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </noscript>
+
+  <main id="main" class="wrap stack-lg">
+    <div class="prose stack">
+      <h1>Contact</h1>
+      <p>The fastest way to reach me is email. I read everything, and I reply
+      to most things.</p>
+    </div>
+
+    <section>
+      <h2 class="section-label">Email</h2>
+      <p style="display: flex; gap: var(--sp-4); align-items: center; flex-wrap: wrap">
+        <a id="email-link" href="mailto:you@example.com">you@example.com</a>
+        <button class="btn" id="copy-email" type="button" hidden>Copy address</button>
+        <span class="visually-hidden" role="status" aria-live="polite" id="copy-status"></span>
+      </p>
+    </section>
+
+    <section>
+      <h2 class="section-label">Elsewhere</h2>
+      <ul class="glyph-list prose">
+        <li>
+          <svg class="glyph" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><circle cx="4" cy="4" r="1.8"/><circle cx="12" cy="12" r="1.8"/><path d="M5.5 5.5l5 5"/></svg>
+          <a href="https://github.com/yourhandle" rel="me noopener">GitHub</a>
+        </li>
+        <li>
+          <svg class="glyph" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v6"/></svg>
+          <a href="https://orcid.org/0000-0000-0000-0000" rel="me noopener">ORCID</a>
+        </li>
+        <li>
+          <svg class="glyph" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><ellipse cx="8" cy="8" rx="7" ry="3"/><circle cx="8" cy="8" r="1.6" fill="currentColor" stroke="none"/></svg>
+          <a href="https://bsky.app/profile/yourhandle" rel="me noopener">Bluesky</a>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer" data-site-footer></footer>
+
+  <script src="assets/js/layout.js" defer></script>
+  <script>
+    /* Progressive enhancement: the mailto link above is the real affordance. */
+    (function () {
+      var btn = document.getElementById('copy-email');
+      var link = document.getElementById('email-link');
+      var status = document.getElementById('copy-status');
+      if (!btn || !link || !navigator.clipboard) return;
+      btn.hidden = false;
+      btn.addEventListener('click', function () {
+        navigator.clipboard.writeText(link.textContent.trim()).then(function () {
+          btn.textContent = 'Copied';
+          status.textContent = 'Email address copied to clipboard.';
+          setTimeout(function () {
+            btn.textContent = 'Copy address';
+            status.textContent = '';
+          }, 2000);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
