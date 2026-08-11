@@ -73,7 +73,6 @@
      arrays only avoid the allocation that mattered: per-particle objects) ---------- */
 
   var count = 0;
-  var staticCoords = null;
   var px = null, py = null, tint = null;  // tint: 0 = eco, 1 = scifi
   var w = 0, h = 0, dpr = 1;
   var fieldT = 0;
@@ -178,12 +177,129 @@
     }
   }
 
+  /* ---------- Phase machine ---------- */
+
+  var PH_DRIFT = 0, PH_GATHER = 1, PH_HOLD = 2, PH_DISPERSE = 3;
+  var PHASE_MS = [4000, 3000, 6000, 2000];   // ~15s per animal, ~3min per cycle
+
+  var phase = PH_DRIFT;
+  var phaseT = 0;
+  var figureIndex = 0;
+  var figCount = 0;          // recruited points; may be < fig.stars.length
+  var assigned = null;       // Int32Array — particle index per star
+  var assignedMask = null;   // Uint8Array over particles
+  var targets = null;        // Float32Array 2*figCount — screen-space targets
+  var startPos = null;       // Float32Array 2*figCount — positions at gather start
+  var jitterPhase = null;    // Float32Array figCount — per-star jitter offset
+  var figCoords = null;      // Float32Array 2*figCount — scratch for drawing
+  var figAlphaMul = 1;       // cached figureBox().alpha, refreshed on recruit/resize
+  var jitterT = 0;
+
+  function easeInOut(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function releaseAll() {
+    figCount = 0;
+    assigned = null;
+    assignedMask = null;
+  }
+
+  /* Greedily give each star target its nearest free particle. Nearest
+     assignment keeps gather paths from crossing, which reads far better than
+     random pairing for a few extra lines. Allocates once per figure (every
+     ~15s), never per frame. */
+  function recruit(fig) {
+    var n = Math.min(fig.stars.length, count);
+    figCount = n;
+    assigned = new Int32Array(n);
+    assignedMask = new Uint8Array(count);
+    targets = new Float32Array(n * 2);
+    startPos = new Float32Array(n * 2);
+    jitterPhase = new Float32Array(n);
+    figCoords = new Float32Array(n * 2);
+
+    var box = figureBox();
+    figAlphaMul = box.alpha;
+    placeFigure(fig, box, targets);
+
+    for (var s = 0; s < n; s++) {
+      var tx = targets[s * 2], ty = targets[s * 2 + 1];
+      var best = -1, bestD = Infinity;
+      for (var i = 0; i < count; i++) {
+        if (assignedMask[i]) continue;
+        var dx = px[i] - tx, dy = py[i] - ty;
+        var d = dx * dx + dy * dy;
+        if (d < bestD) { bestD = d; best = i; }
+      }
+      if (best < 0) { figCount = s; break; }   // pool exhausted — clamp
+      assignedMask[best] = 1;
+      assigned[s] = best;
+      startPos[s * 2] = px[best];
+      startPos[s * 2 + 1] = py[best];
+      jitterPhase[s] = Math.random() * Math.PI * 2;
+    }
+  }
+
+  function advancePhase(dt) {
+    phaseT += dt;
+    if (phaseT < PHASE_MS[phase]) return;
+    phaseT -= PHASE_MS[phase];
+    if (phase === PH_DRIFT) {
+      if (!ZODIAC.length) { phaseT = 0; return; }  // no data: drift forever
+      phase = PH_GATHER;
+      recruit(ZODIAC[figureIndex]);
+    } else if (phase === PH_GATHER) {
+      phase = PH_HOLD;
+    } else if (phase === PH_HOLD) {
+      phase = PH_DISPERSE;
+    } else {
+      phase = PH_DRIFT;
+      releaseAll();
+      figureIndex = (figureIndex + 1) % ZODIAC.length;
+    }
+  }
+
+  /* Edge/star opacity: absent while drifting, eases in as the figure
+     assembles, full while held, fades out as it disperses. */
+  function figureAlpha() {
+    if (phase === PH_GATHER) return easeInOut(phaseT / PHASE_MS[PH_GATHER]);
+    if (phase === PH_HOLD) return 1;
+    if (phase === PH_DISPERSE) return 1 - phaseT / PHASE_MS[PH_DISPERSE];
+    return 0;
+  }
+
   /* ---------- Simulation + draw ---------- */
 
   function step(dt) {
+    advancePhase(dt);
+    jitterT += dt;
     fieldT += dt * NOISE_DRIFT;
     var d = Math.min(dt, 50) * SPEED * 0.06;
-    for (var i = 0; i < count; i++) {
+    var s, i;
+
+    if (figCount && phase === PH_GATHER) {
+      var p = easeInOut(phaseT / PHASE_MS[PH_GATHER]);
+      for (s = 0; s < figCount; s++) {
+        i = assigned[s];
+        px[i] = startPos[s * 2] + (targets[s * 2] - startPos[s * 2]) * p;
+        py[i] = startPos[s * 2 + 1] + (targets[s * 2 + 1] - startPos[s * 2 + 1]) * p;
+      }
+    } else if (figCount && phase === PH_HOLD) {
+      for (s = 0; s < figCount; s++) {
+        i = assigned[s];
+        px[i] = targets[s * 2] + Math.sin(jitterT * 0.002 + jitterPhase[s]) * 0.6;
+        py[i] = targets[s * 2 + 1] + Math.cos(jitterT * 0.0017 + jitterPhase[s]) * 0.6;
+      }
+    }
+
+    /* Everything not currently pinned follows the flow field. Recruited
+       particles are pinned only during GATHER and HOLD — during DISPERSE they
+       rejoin the field, which is what makes the figure dissolve rather than
+       blink out. */
+    var pinned = (phase === PH_GATHER || phase === PH_HOLD);
+    for (i = 0; i < count; i++) {
+      if (pinned && assignedMask && assignedMask[i]) continue;
       var angle = noise2(px[i] * NOISE_SCALE + fieldT,
                          py[i] * NOISE_SCALE - fieldT) * Math.PI * 4;
       var nx = px[i] + Math.cos(angle) * d;
@@ -200,7 +316,9 @@
     /* Connections first, so dots sit on top. */
     ctx.lineWidth = 1;
     for (var i = 0; i < count; i++) {
+      if (assignedMask && assignedMask[i]) continue;
       for (var j = i + 1; j < count; j++) {
+        if (assignedMask && assignedMask[j]) continue;
         var dx = px[i] - px[j], dy = py[i] - py[j];
         var dsq = dx * dx + dy * dy;
         if (dsq > LINK_DIST_SQ) continue;
@@ -214,22 +332,21 @@
     }
 
     for (var k = 0; k < count; k++) {
+      if (assignedMask && assignedMask[k]) continue;
       ctx.fillStyle = rgbaMix(tint[k], 0.55);
       ctx.beginPath();
       ctx.arc(px[k], py[k], 1.6, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    /* Task 4 replaces this with the phase-driven figure. */
-    if (ZODIAC.length) {
-      var fig = ZODIAC[0];
-      var box = figureBox();
-      var n = fig.stars.length;
-      if (!staticCoords || staticCoords.length < n * 2) {
-        staticCoords = new Float32Array(n * 2);
+    if (figCount) {
+      var fig = ZODIAC[figureIndex];
+      for (var s = 0; s < figCount; s++) {
+        var fi = assigned[s];
+        figCoords[s * 2] = px[fi];
+        figCoords[s * 2 + 1] = py[fi];
       }
-      placeFigure(fig, box, staticCoords);
-      drawFigure(fig, staticCoords, box.alpha, n);
+      drawFigure(fig, figCoords, figureAlpha() * figAlphaMul, figCount);
     }
   }
 
