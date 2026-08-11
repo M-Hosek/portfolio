@@ -1,4 +1,6 @@
-/* Pollen drift — a value-noise flow field on canvas 2D.
+/* Hero canvas animation: a value-noise flow field of ambient particles that
+   periodically gathers into one of twelve Chinese zodiac star figures
+   (drift -> gather -> hold -> disperse), then releases back to drifting.
    Decorative only: aria-hidden, pointer-events: none, no input. */
 (function () {
   'use strict';
@@ -114,6 +116,16 @@
       phase = PH_DRIFT;
       phaseT = 0;
     } else if (figCount) {
+      /* Minor resize: keep the current phase, figure, and recruitment —
+         just re-derive targets/figCoords for the new box so a figure
+         mid-gather keeps assembling toward its (moved) position instead of
+         being released. Latent hazard: placeFigure() writes
+         fig.stars.length * 2 floats, but `targets` was sized to
+         min(fig.stars.length, count) * 2 by recruit(). If targetCount()'s
+         floor of 60 were ever lowered below the 14-star zodiac ceiling, the
+         tail writes here would run past the clamped `targets` length and be
+         silently dropped by the typed array — no throw, no NaN, just stale
+         coordinates for the clamped stars. Unreachable today. */
       var box = figureBox();
       figAlphaMul = box.alpha;
       placeFigure(ZODIAC[figureIndex], box, targets);
@@ -139,11 +151,13 @@
   /* ---------- Zodiac figures ---------- */
 
   var ZODIAC = window.ZODIAC || [];
-  var FIG_NARROW = 700;      // px — below this the hero stacks, so recenter
+  var FIG_NARROW = 700;      // px — below this the 44ch text column (.hero-body)
+                              // has consumed the width the figure needs, so recenter
 
   /* Target rectangle for the figure, plus an opacity multiplier.
      Wide: the open area right of the hero text. Narrow: centered and
-     dimmed, because the text column stacks over it. */
+     dimmed, because the 44ch text column (.hero-body { max-width: 44ch })
+     eventually consumes the width the figure would otherwise use. */
   function figureBox() {
     if (w >= FIG_NARROW) {
       return { x: w * 0.58, y: h * 0.18, w: w * 0.36, h: h * 0.64, alpha: 1 };
@@ -186,7 +200,14 @@
     }
 
     for (e = 0; e < n; e++) {
-      ctx.fillStyle = rgbaMix(e / span, alpha * 0.9);
+      /* Floor at 0.55 — the ambient-dot alpha these particles were drawn at
+         a moment ago — instead of ramping from 0 like the edge stroke does.
+         Recruited particles are skipped by both ambient loops in draw() for
+         the whole GATHER..DISPERSE span, so drawFigure() is their only
+         renderer; ramping this alongside the edge term made them blink out
+         at the DRIFT->GATHER boundary and snap back at DISPERSE->DRIFT. Do
+         not "simplify" this back to `alpha * 0.9`. */
+      ctx.fillStyle = rgbaMix(e / span, 0.55 + (0.9 - 0.55) * alpha);
       ctx.beginPath();
       ctx.arc(coords[e * 2], coords[e * 2 + 1], 2.2, 0, Math.PI * 2);
       ctx.fill();
@@ -215,6 +236,13 @@
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
 
+  /* Invariant: nulls `assigned` and `assignedMask` but deliberately leaves
+     `targets`/`startPos`/`jitterPhase`/`figCoords` allocated and stale —
+     safe only because every consumer gates on `figCount` (reset to 0 here)
+     before touching them. In particular step()'s
+     `pinned && assignedMask && ...` guard would silently un-pin an entire
+     figure if `figCount > 0` were ever reachable with `assignedMask ===
+     null`; that must never happen. */
   function releaseAll() {
     figCount = 0;
     assigned = null;
