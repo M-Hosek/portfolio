@@ -73,6 +73,7 @@
      arrays only avoid the allocation that mattered: per-particle objects) ---------- */
 
   var count = 0;
+  var staticCoords = null;
   var px = null, py = null, tint = null;  // tint: 0 = eco, 1 = scifi
   var w = 0, h = 0, dpr = 1;
   var fieldT = 0;
@@ -111,6 +112,72 @@
     if (drastic) seed();
   }
 
+  /* Mix the two accents. t: 0 = ecology green, 1 = sci-fi cyan. */
+  function rgbaMix(t, alpha) {
+    var r = eco[0] + (scifi[0] - eco[0]) * t;
+    var g = eco[1] + (scifi[1] - eco[1]) * t;
+    var b = eco[2] + (scifi[2] - eco[2]) * t;
+    return 'rgba(' + (r | 0) + ',' + (g | 0) + ',' + (b | 0) + ',' +
+           alpha.toFixed(3) + ')';
+  }
+
+  /* ---------- Zodiac figures ---------- */
+
+  var ZODIAC = window.ZODIAC || [];
+  var FIG_NARROW = 700;      // px — below this the hero stacks, so recenter
+
+  /* Target rectangle for the figure, plus an opacity multiplier.
+     Wide: the open area right of the hero text. Narrow: centered and
+     dimmed, because the text column stacks over it. */
+  function figureBox() {
+    if (w >= FIG_NARROW) {
+      return { x: w * 0.58, y: h * 0.18, w: w * 0.36, h: h * 0.64, alpha: 1 };
+    }
+    return { x: w * 0.10, y: h * 0.15, w: w * 0.80, h: h * 0.70, alpha: 0.5 };
+  }
+
+  /* Map a figure's normalized stars into screen coords, preserving its
+     aspect and centering it in the box. Writes 2*n floats into `out`. */
+  function placeFigure(fig, box, out) {
+    var boxAspect = box.w / box.h;
+    var fw, fh;
+    if (fig.aspect >= boxAspect) { fw = box.w; fh = box.w / fig.aspect; }
+    else { fh = box.h; fw = box.h * fig.aspect; }
+    var ox = box.x + (box.w - fw) * 0.5;
+    var oy = box.y + (box.h - fh) * 0.5;
+    for (var i = 0; i < fig.stars.length; i++) {
+      out[i * 2] = ox + fig.stars[i][0] * fw;
+      out[i * 2 + 1] = oy + fig.stars[i][1] * fh;
+    }
+  }
+
+  /* Draw authored edges then stars. `coords` is x0,y0,x1,y1,... in screen
+     space; it may hold fewer points than fig.stars if recruitment was
+     clamped, so edges referencing missing points are skipped. */
+  function drawFigure(fig, coords, alpha, n) {
+    if (alpha <= 0) return;
+    var span = fig.stars.length > 1 ? fig.stars.length - 1 : 1;
+    var e, a, b;
+
+    ctx.lineWidth = 1;
+    for (e = 0; e < fig.edges.length; e++) {
+      a = fig.edges[e][0]; b = fig.edges[e][1];
+      if (a >= n || b >= n) continue;
+      ctx.strokeStyle = rgbaMix((a + b) / (2 * span), alpha * 0.55);
+      ctx.beginPath();
+      ctx.moveTo(coords[a * 2], coords[a * 2 + 1]);
+      ctx.lineTo(coords[b * 2], coords[b * 2 + 1]);
+      ctx.stroke();
+    }
+
+    for (e = 0; e < n; e++) {
+      ctx.fillStyle = rgbaMix(e / span, alpha * 0.9);
+      ctx.beginPath();
+      ctx.arc(coords[e * 2], coords[e * 2 + 1], 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
   /* ---------- Simulation + draw ---------- */
 
   function step(dt) {
@@ -138,12 +205,7 @@
         var dsq = dx * dx + dy * dy;
         if (dsq > LINK_DIST_SQ) continue;
         var falloff = 1 - Math.sqrt(dsq) / LINK_DIST;
-        var t = (tint[i] + tint[j]) * 0.5;
-        var r = eco[0] + (scifi[0] - eco[0]) * t;
-        var g = eco[1] + (scifi[1] - eco[1]) * t;
-        var b = eco[2] + (scifi[2] - eco[2]) * t;
-        ctx.strokeStyle = 'rgba(' + (r | 0) + ',' + (g | 0) + ',' + (b | 0) +
-                          ',' + (falloff * 0.28).toFixed(3) + ')';
+        ctx.strokeStyle = rgbaMix((tint[i] + tint[j]) * 0.5, falloff * 0.28);
         ctx.beginPath();
         ctx.moveTo(px[i], py[i]);
         ctx.lineTo(px[j], py[j]);
@@ -152,14 +214,22 @@
     }
 
     for (var k = 0; k < count; k++) {
-      var tk = tint[k];
-      var rr = eco[0] + (scifi[0] - eco[0]) * tk;
-      var gg = eco[1] + (scifi[1] - eco[1]) * tk;
-      var bb = eco[2] + (scifi[2] - eco[2]) * tk;
-      ctx.fillStyle = 'rgba(' + (rr | 0) + ',' + (gg | 0) + ',' + (bb | 0) + ',0.55)';
+      ctx.fillStyle = rgbaMix(tint[k], 0.55);
       ctx.beginPath();
       ctx.arc(px[k], py[k], 1.6, 0, Math.PI * 2);
       ctx.fill();
+    }
+
+    /* Task 4 replaces this with the phase-driven figure. */
+    if (ZODIAC.length) {
+      var fig = ZODIAC[0];
+      var box = figureBox();
+      var n = fig.stars.length;
+      if (!staticCoords || staticCoords.length < n * 2) {
+        staticCoords = new Float32Array(n * 2);
+      }
+      placeFigure(fig, box, staticCoords);
+      drawFigure(fig, staticCoords, box.alpha, n);
     }
   }
 
