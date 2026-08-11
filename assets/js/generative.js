@@ -242,6 +242,20 @@
   }
 
   function advancePhase(dt) {
+    /* A long main-thread stall or OS sleep/resume can hand step() a huge dt
+       (minutes, not ms) without ever firing visibilitychange or the
+       IntersectionObserver — those only cover off-screen/hidden, not a
+       visible-but-stalled tab, so start()'s `last` reset never happens.
+       Clamp here the same way the flow-field term below is already clamped
+       (Math.min(dt, 50)): without it, a single call could push phaseT past
+       the END of the phase it is about to enter, and the unclamped
+       phaseT/PHASE_MS division in step()'s GATHER branch and in
+       figureAlpha() would overshoot proportionally — particles landing far
+       past their targets, or figureAlpha() outside [0, 1], for one frame.
+       250ms is >7 frames at 30fps, so normal frame-to-frame dt is untouched;
+       a genuine backlog just drains over a few extra frames instead of
+       overshooting in one. */
+    if (dt > 250) dt = 250;
     phaseT += dt;
     if (phaseT < PHASE_MS[phase]) return;
     phaseT -= PHASE_MS[phase];
