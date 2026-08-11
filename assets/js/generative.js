@@ -108,7 +108,23 @@
     canvas.height = Math.round(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    if (drastic) seed();
+    if (drastic) {
+      seed();
+      releaseAll();
+      phase = PH_DRIFT;
+      phaseT = 0;
+    } else if (figCount) {
+      var box = figureBox();
+      figAlphaMul = box.alpha;
+      placeFigure(ZODIAC[figureIndex], box, targets);
+      if (phase === PH_HOLD) {
+        for (var s = 0; s < figCount; s++) {
+          var i = assigned[s];
+          px[i] = targets[s * 2];
+          py[i] = targets[s * 2 + 1];
+        }
+      }
+    }
   }
 
   /* Mix the two accents. t: 0 = ecology green, 1 = sci-fi cyan. */
@@ -283,6 +299,22 @@
     return 0;
   }
 
+  /* Assemble figure 0 and snap its particles onto their targets, so the single
+     reduced-motion frame shows a finished constellation rather than a random
+     scatter. Deterministic: always figure 0, never random. */
+  function prepareStaticFigure() {
+    if (!ZODIAC.length) return;
+    figureIndex = 0;
+    recruit(ZODIAC[0]);
+    for (var s = 0; s < figCount; s++) {
+      var i = assigned[s];
+      px[i] = targets[s * 2];
+      py[i] = targets[s * 2 + 1];
+    }
+    phase = PH_HOLD;
+    phaseT = 0;
+  }
+
   /* ---------- Simulation + draw ---------- */
 
   function step(dt) {
@@ -418,21 +450,22 @@
   document.addEventListener('visibilitychange', sync);
 
   if (reduceMotion.matches) {
+    prepareStaticFigure();
     draw();  // one static frame, no loop
   } else {
     sync();
   }
 
+  function afterResize() {
+    resize();
+    if (reduceMotion.matches) prepareStaticFigure();
+    if (!running) draw();
+  }
+
   if ('ResizeObserver' in window) {
-    new ResizeObserver(function () {
-      resize();
-      if (!running) draw();
-    }).observe(canvas);
+    new ResizeObserver(afterResize).observe(canvas);
   } else {
-    window.addEventListener('resize', function () {
-      resize();
-      if (!running) draw();
-    });
+    window.addEventListener('resize', afterResize);
   }
 
   if (window.PortfolioTheme) {
@@ -443,8 +476,16 @@
   }
 
   var onMotionChange = function () {
-    if (reduceMotion.matches) { stop(); draw(); }
-    else sync();
+    if (reduceMotion.matches) {
+      stop();
+      prepareStaticFigure();
+      draw();
+    } else {
+      releaseAll();
+      phase = PH_DRIFT;
+      phaseT = 0;
+      sync();
+    }
   };
   if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', onMotionChange);
   else reduceMotion.addListener(onMotionChange);
