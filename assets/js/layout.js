@@ -5,7 +5,9 @@
 
   var SITE_NAME = 'Your Name';
 
-  /* Single source of truth for navigation. Edit here only. */
+  /* Source of truth for the INJECTED nav. The <noscript> fallback nav in all
+     seven HTML files duplicates these destinations and must be updated in step —
+     it is what no-JS clients and crawlers see. */
   var NAV = [
     { slug: 'research', href: 'research.html', label: 'Research' },
     { slug: 'projects', href: 'projects.html', label: 'Projects' },
@@ -32,7 +34,7 @@
       '<div class="wrap">' +
         '<a class="brand" href="' + root + 'index.html">' + SITE_NAME + '</a>' +
         '<nav class="site-nav" aria-label="Primary"><ul>' + items + '</ul></nav>' +
-        '<button class="theme-toggle"></button>' +
+        '<button class="theme-toggle" type="button" aria-label="Theme"></button>' +
       '</div>';
 
     if (window.PortfolioTheme) {

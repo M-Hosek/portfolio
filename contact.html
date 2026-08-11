@@ -28,7 +28,7 @@
     </nav>
   </noscript>
 
-  <main id="main" class="wrap stack-lg">
+  <main id="main" class="wrap stack-lg" tabindex="-1">
     <div class="prose stack">
       <h1>Contact</h1>
       <p>The fastest way to reach me is email. I read everything, and I reply
@@ -82,6 +82,8 @@
             btn.textContent = 'Copy address';
             status.textContent = '';
           }, 2000);
+        }).catch(function () {
+          status.textContent = 'Copy failed — use the email link instead.';
         });
       });
     })();
