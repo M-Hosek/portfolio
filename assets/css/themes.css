@@ -9,6 +9,7 @@
   --eco:     var(--c-light-eco);
   --scifi:   var(--c-light-scifi);
   --focus:   var(--c-light-scifi);
+  --heading: var(--c-light-heading);
   color-scheme: light;
 }
 
@@ -23,6 +24,7 @@
     --eco:     var(--c-dark-eco);
     --scifi:   var(--c-dark-scifi);
     --focus:   var(--c-dark-scifi);
+    --heading: var(--c-dark-text);
     color-scheme: dark;
   }
 }
@@ -37,6 +39,7 @@
   --eco:     var(--c-dark-eco);
   --scifi:   var(--c-dark-scifi);
   --focus:   var(--c-dark-scifi);
+  --heading: var(--c-dark-text);
   color-scheme: dark;
 }
 
@@ -50,5 +53,6 @@
   --eco:     var(--c-light-eco);
   --scifi:   var(--c-light-scifi);
   --focus:   var(--c-light-scifi);
+  --heading: var(--c-light-heading);
   color-scheme: light;
 }
