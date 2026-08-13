@@ -54,7 +54,7 @@ Copied from the design spec. Every task's requirements implicitly include this s
 
 This task is independent of the canvas work and ships value on its own.
 
-- [ ] **Step 1: Add the raw token**
+- [x] **Step 1: Add the raw token**
 
 In `assets/css/tokens.css`, inside the existing `/* Raw palette — light */` group, after `--c-light-scifi`, add:
 
@@ -64,7 +64,7 @@ In `assets/css/tokens.css`, inside the existing `/* Raw palette — light */` gr
 
 Do not add a dark counterpart — dark headings reuse `--c-dark-text` so the dark theme stays pixel-identical.
 
-- [ ] **Step 2: Map the semantic token in all four theme blocks**
+- [x] **Step 2: Map the semantic token in all four theme blocks**
 
 In `assets/css/themes.css`, add one declaration to each of the four blocks, immediately after the existing `--focus` line in each:
 
@@ -94,7 +94,7 @@ In `:root[data-theme="light"]`:
 
 All four must define it. A block that omits it would inherit the wrong value when a user switches themes.
 
-- [ ] **Step 3: Apply it to headings**
+- [x] **Step 3: Apply it to headings**
 
 In `assets/css/base.css`, the existing rule is:
 
@@ -119,7 +119,7 @@ h1, h2, h3, h4 {
 }
 ```
 
-- [ ] **Step 4: Force black headings in print**
+- [x] **Step 4: Force black headings in print**
 
 This step is required, not optional. `base.css`'s print block relies on `body { color: #000 }` for text colour. Now that headings carry an explicit `color`, they override it and would print in cinnabar — most visibly on the CV.
 
@@ -129,7 +129,7 @@ In `assets/css/base.css`, inside the existing `@media print { ... }` block, afte
   h1, h2, h3, h4 { color: #000; }
 ```
 
-- [ ] **Step 5: Verify with a throwaway Node script**
+- [x] **Step 5: Verify with a throwaway Node script**
 
 Write a script that reads the three CSS files and asserts:
 
@@ -145,7 +145,7 @@ Run it, paste the source and full output into your report, then delete it.
 
 Expected: all assertions pass.
 
-- [ ] **Step 6: Confirm the contrast numbers independently**
+- [x] **Step 6: Confirm the contrast numbers independently**
 
 Write a second throwaway script computing the WCAG contrast ratio of `#732A26` against `#FBFAF6` and `#FFFFFF`:
 
@@ -170,7 +170,7 @@ Expected: `9.63` and `10.06`, both above the 4.5:1 AA threshold. Report the actu
 
 Delete the script.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add assets/css/tokens.css assets/css/themes.css assets/css/base.css
@@ -197,7 +197,7 @@ git commit -m "feat: cinnabar-burgundy headings in light theme"
 
 **Note on the quadrupeds:** ox, tiger, horse, goat, dog, and pig share a similar skeleton — that is expected, not a defect. Real constellations are schematic. They are differentiated by `aspect` (a dog is 1.45 wide, a goat 1.25), by ear and tail placement, and by horns or snout. Do not try to make them more distinct by adding stars; the 14-star ceiling exists because more reads as noise at hero scale.
 
-- [ ] **Step 1: Create `assets/js/zodiac.js`**
+- [x] **Step 1: Create `assets/js/zodiac.js`**
 
 ```js
 /* Chinese zodiac star figures. Data only — no logic, no rendering.
@@ -382,7 +382,7 @@ window.ZODIAC = [
 ];
 ```
 
-- [ ] **Step 2: Load it in `index.html`**
+- [x] **Step 2: Load it in `index.html`**
 
 In `index.html`, the two deferred scripts at the end of `<body>` are currently:
 
@@ -403,7 +403,7 @@ Order matters: `defer` scripts execute in document order, so this guarantees `wi
 
 **Do not add this script to any other page.** The canvas is home-only.
 
-- [ ] **Step 3: Run `node --check`**
+- [x] **Step 3: Run `node --check`**
 
 ```bash
 node --check assets/js/zodiac.js
@@ -411,7 +411,7 @@ node --check assets/js/zodiac.js
 
 Expected: no output, exit code 0.
 
-- [ ] **Step 4: Validate the data with a throwaway Node script**
+- [x] **Step 4: Validate the data with a throwaway Node script**
 
 This is the highest-value check in the task — bad figure data produces a canvas that looks like random noise with no error anywhere. Write a script that loads `zodiac.js` into a stubbed context (assign a `window` object, run the file with `node:vm`, read back `window.ZODIAC`) and asserts, **reporting per figure by name**:
 
@@ -430,7 +430,7 @@ Run it, paste the full script source and complete output into your report, then 
 
 Expected: all twelve figures pass every check. **If a figure fails — a disconnected graph or a bounding box that is not exactly 0–1 — report it with the figure name and the specific failure. Do not silently adjust the coordinates to make the check pass**; the controller needs to know the plan's data was wrong.
 
-- [ ] **Step 5: Confirm no other page loads the data**
+- [x] **Step 5: Confirm no other page loads the data**
 
 ```bash
 grep -l "zodiac.js" *.html content/posts/*.html
@@ -438,7 +438,7 @@ grep -l "zodiac.js" *.html content/posts/*.html
 
 Expected: `index.html` only.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add assets/js/zodiac.js index.html
@@ -462,7 +462,7 @@ git commit -m "feat: add Chinese zodiac star-figure data"
 
 **Deliverable for this task:** the hero renders **one figure (index 0, the rat) permanently assembled** in the right-hand region, on top of the existing drifting particles. No phases yet. This isolates placement and rendering bugs from state-machine bugs — if the figure is misplaced or misshapen you find out now, with nothing else moving.
 
-- [ ] **Step 1: Add the colour helper and refactor the two existing call sites**
+- [x] **Step 1: Add the colour helper and refactor the two existing call sites**
 
 `draw()` currently inlines the same four-line eco→scifi mix twice. A third copy is about to be added, so extract it first.
 
@@ -514,7 +514,7 @@ with:
 
 This is behaviour-preserving: same inputs, same output strings.
 
-- [ ] **Step 2: Add the figure module block**
+- [x] **Step 2: Add the figure module block**
 
 Insert after the `resize()` function and before `/* ---------- Simulation + draw ---------- */`:
 
@@ -579,7 +579,7 @@ Insert after the `resize()` function and before `/* ---------- Simulation + draw
 
 Note `drawFigure` takes an explicit `n` (point count) rather than reading `fig.stars.length`, because Task 4 may recruit fewer points than the figure has stars if the particle pool is small. Edges pointing at absent stars are skipped rather than reading `undefined` coordinates, which would produce `NaN` and blank the canvas.
 
-- [ ] **Step 3: Draw the static figure**
+- [x] **Step 3: Draw the static figure**
 
 At the very end of `draw()`, after the existing particle loop, add:
 
@@ -605,7 +605,7 @@ and declare the scratch buffer next to the other module state, beside `var count
 
 The buffer is allocated once and reused, not rebuilt every frame.
 
-- [ ] **Step 4: Run `node --check`**
+- [x] **Step 4: Run `node --check`**
 
 ```bash
 node --check assets/js/generative.js
@@ -613,7 +613,7 @@ node --check assets/js/generative.js
 
 Expected: no output, exit code 0.
 
-- [ ] **Step 5: Verify with a throwaway Node harness**
+- [x] **Step 5: Verify with a throwaway Node harness**
 
 Build a harness that stubs the browser surface (`document.querySelector` returning a canvas stub whose `getContext('2d')` returns a **recording** context capturing `moveTo`/`lineTo`/`arc`/`stroke`/`fill` calls and `strokeStyle`/`fillStyle` assignments; `getBoundingClientRect`; `matchMedia`; `requestAnimationFrame`; `getComputedStyle`; `IntersectionObserver`; `ResizeObserver`), load `zodiac.js` then `generative.js` into it with `node:vm`, and assert:
 
@@ -629,7 +629,7 @@ Run it, paste the full harness source and complete output into your report, then
 
 **You cannot verify how it looks** — whether the rat reads as a rat is a human judgement. State that plainly rather than claiming visual verification.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add assets/js/generative.js
@@ -650,7 +650,7 @@ git commit -m "feat: place and draw zodiac figures on the hero canvas"
   - mutable state `phase`, `phaseT`, `figureIndex`, `figCount`, `assigned`, `assignedMask`, `targets`, `figAlphaMul`
   - `recruit(fig)`, `releaseAll()`, `figureAlpha()`
 
-- [ ] **Step 1: Add the phase-machine block**
+- [x] **Step 1: Add the phase-machine block**
 
 Insert immediately after the Task 3 figure block, before `/* ---------- Simulation + draw ---------- */`:
 
@@ -748,7 +748,7 @@ Insert immediately after the Task 3 figure block, before `/* ---------- Simulati
   }
 ```
 
-- [ ] **Step 2: Rewrite `step()` to drive the phases**
+- [x] **Step 2: Rewrite `step()` to drive the phases**
 
 Replace the whole existing `step()` with:
 
@@ -793,7 +793,7 @@ Replace the whole existing `step()` with:
   }
 ```
 
-- [ ] **Step 3: Make the ambient layer skip recruited particles**
+- [x] **Step 3: Make the ambient layer skip recruited particles**
 
 Recruited particles are drawn by `drawFigure` at radius `2.2`. Without these skips they would *also* be drawn as ambient dots at `1.6` and linked by proximity, producing a muddle of accidental lines across the deliberate figure.
 
@@ -813,7 +813,7 @@ and in the particle loop:
       if (assignedMask && assignedMask[k]) continue;
 ```
 
-- [ ] **Step 4: Replace the static figure block with the phase-driven one**
+- [x] **Step 4: Replace the static figure block with the phase-driven one**
 
 Delete the Task 3 block at the end of `draw()` (the one beginning `/* Task 4 replaces this with the phase-driven figure. */`) and the `var staticCoords = null;` declaration. In its place, at the end of `draw()`:
 
@@ -831,7 +831,7 @@ Delete the Task 3 block at the end of `draw()` (the one beginning `/* Task 4 rep
 
 The figure is drawn from the recruited particles' **current** positions, not from `targets` — that is what makes it visibly assemble during gather and dissolve during disperse.
 
-- [ ] **Step 5: Run `node --check`**
+- [x] **Step 5: Run `node --check`**
 
 ```bash
 node --check assets/js/generative.js
@@ -839,7 +839,7 @@ node --check assets/js/generative.js
 
 Expected: no output, exit code 0.
 
-- [ ] **Step 6: Verify with a throwaway Node harness**
+- [x] **Step 6: Verify with a throwaway Node harness**
 
 Build a Node harness (Node v24, pure Node, no installs; `node:vm` works well) stubbing the browser surface this file uses:
 
@@ -869,7 +869,7 @@ Run it, paste the full harness source and complete output into your report, then
 
 **Not verifiable here:** whether the morph looks good, whether 6s is long enough to read a figure, and whether the animals are recognizable. Say so plainly.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add assets/js/generative.js
@@ -888,7 +888,7 @@ git commit -m "feat: cycle the hero canvas through zodiac constellations"
 
 This task closes the two behaviours the spec calls out explicitly — what happens on resize mid-figure, and what reduced-motion users see — then re-runs the whole project's regression checks.
 
-- [ ] **Step 1: Add the static-figure helper**
+- [x] **Step 1: Add the static-figure helper**
 
 Insert immediately after `figureAlpha()`:
 
@@ -910,7 +910,7 @@ Insert immediately after `figureAlpha()`:
   }
 ```
 
-- [ ] **Step 2: Teach `resize()` about the figure**
+- [x] **Step 2: Teach `resize()` about the figure**
 
 The existing `resize()` already distinguishes a drastic change (>25% in either dimension) from a minor one. Replace its final `if (drastic) seed();` with:
 
@@ -938,7 +938,7 @@ Rationale, so this is not "simplified" later: a drastic resize has already scatt
 
 If recruitment was ever clamped below `fig.stars.length`, `placeFigure` writes past the end of `targets`. Typed-array out-of-bounds writes are silently discarded in JavaScript, so this is safe — no crash, no corruption.
 
-- [ ] **Step 3: Wire reduced motion to the static figure**
+- [x] **Step 3: Wire reduced motion to the static figure**
 
 Replace the existing reduced-motion branch in the wiring section:
 
@@ -961,7 +961,7 @@ with:
   }
 ```
 
-- [ ] **Step 4: Keep the figure through resizes and motion toggles**
+- [x] **Step 4: Keep the figure through resizes and motion toggles**
 
 Add a shared resize handler beside the observer wiring:
 
@@ -1004,7 +1004,7 @@ Then update the motion-toggle handler:
 
 Turning reduced motion **off** must release the pinned static figure and reset the cycle, or the first frames would show a frozen figure while the rest of the field moves.
 
-- [ ] **Step 5: Run `node --check`**
+- [x] **Step 5: Run `node --check`**
 
 ```bash
 node --check assets/js/generative.js
@@ -1012,7 +1012,7 @@ node --check assets/js/generative.js
 
 Expected: no output, exit code 0.
 
-- [ ] **Step 6: Verify behaviour with a throwaway Node harness**
+- [x] **Step 6: Verify behaviour with a throwaway Node harness**
 
 Build a Node harness (Node v24, pure Node, no installs; `node:vm` works well) stubbing the browser surface this file uses:
 
@@ -1036,7 +1036,7 @@ Load `zodiac.js` then `generative.js` into that context and assert:
 
 Run it, paste the full harness source and complete output into your report, then delete it.
 
-- [ ] **Step 7: Re-run the project-wide regression checks**
+- [x] **Step 7: Re-run the project-wide regression checks**
 
 The canvas work touched a shared file and the CSS work touched three. Confirm nothing else broke. Write one throwaway script that asserts, across the whole repository:
 
@@ -1049,7 +1049,7 @@ The canvas work touched a shared file and the CSS work touched three. Confirm no
 
 Run it and report the results per category.
 
-- [ ] **Step 8: Re-validate all seven pages against the W3C**
+- [x] **Step 8: Re-validate all seven pages against the W3C**
 
 The HTML changed only in `index.html` (one script tag), but the success criteria require all seven to stay clean. Java is not installed, so use the W3C Nu validator's HTTP API:
 
@@ -1063,7 +1063,7 @@ Validate `index.html`, `research.html`, `projects.html`, `writing.html`, `cv.htm
 
 The bar is **zero `type: "error"` entries per file**. Report per-file error and warning counts plus the full text of any message. Distinguish "the validator returned an empty `messages` array" from "the request returned nothing" — a silently failed `curl` parsed as no-messages would look identical to a pass.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add assets/js/generative.js
