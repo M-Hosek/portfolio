@@ -1,4 +1,6 @@
-/* Pollen drift — a value-noise flow field on canvas 2D.
+/* Hero canvas animation: a value-noise flow field of ambient particles that
+   periodically gathers into one of twelve Chinese zodiac star figures
+   (drift -> gather -> hold -> disperse), then releases back to drifting.
    Decorative only: aria-hidden, pointer-events: none, no input. */
 (function () {
   'use strict';
@@ -108,15 +110,270 @@
     canvas.height = Math.round(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    if (drastic) seed();
+    if (drastic) {
+      seed();
+      releaseAll();
+      phase = PH_DRIFT;
+      phaseT = 0;
+    } else if (figCount) {
+      /* Minor resize: keep the current phase, figure, and recruitment —
+         just re-derive targets/figCoords for the new box so a figure
+         mid-gather keeps assembling toward its (moved) position instead of
+         being released. Latent hazard: placeFigure() writes
+         fig.stars.length * 2 floats, but `targets` was sized to
+         min(fig.stars.length, count) * 2 by recruit(). If targetCount()'s
+         floor of 60 were ever lowered below the 14-star zodiac ceiling, the
+         tail writes here would run past the clamped `targets` length and be
+         silently dropped by the typed array — no throw, no NaN, just stale
+         coordinates for the clamped stars. Unreachable today. */
+      var box = figureBox();
+      figAlphaMul = box.alpha;
+      placeFigure(ZODIAC[figureIndex], box, targets);
+      if (phase === PH_HOLD) {
+        for (var s = 0; s < figCount; s++) {
+          var i = assigned[s];
+          px[i] = targets[s * 2];
+          py[i] = targets[s * 2 + 1];
+        }
+      }
+    }
+  }
+
+  /* Mix the two accents. t: 0 = ecology green, 1 = sci-fi cyan. */
+  function rgbaMix(t, alpha) {
+    var r = eco[0] + (scifi[0] - eco[0]) * t;
+    var g = eco[1] + (scifi[1] - eco[1]) * t;
+    var b = eco[2] + (scifi[2] - eco[2]) * t;
+    return 'rgba(' + (r | 0) + ',' + (g | 0) + ',' + (b | 0) + ',' +
+           alpha.toFixed(3) + ')';
+  }
+
+  /* ---------- Zodiac figures ---------- */
+
+  var ZODIAC = window.ZODIAC || [];
+  var FIG_NARROW = 700;      // px — below this the 44ch text column (.hero-body)
+                              // has consumed the width the figure needs, so recenter
+
+  /* Target rectangle for the figure, plus an opacity multiplier.
+     Wide: the open area right of the hero text. Narrow: centered and
+     dimmed, because the 44ch text column (.hero-body { max-width: 44ch })
+     eventually consumes the width the figure would otherwise use. */
+  function figureBox() {
+    if (w >= FIG_NARROW) {
+      return { x: w * 0.58, y: h * 0.18, w: w * 0.36, h: h * 0.64, alpha: 1 };
+    }
+    return { x: w * 0.10, y: h * 0.15, w: w * 0.80, h: h * 0.70, alpha: 0.5 };
+  }
+
+  /* Map a figure's normalized stars into screen coords, preserving its
+     aspect and centering it in the box. Writes 2*n floats into `out`. */
+  function placeFigure(fig, box, out) {
+    var boxAspect = box.w / box.h;
+    var fw, fh;
+    if (fig.aspect >= boxAspect) { fw = box.w; fh = box.w / fig.aspect; }
+    else { fh = box.h; fw = box.h * fig.aspect; }
+    var ox = box.x + (box.w - fw) * 0.5;
+    var oy = box.y + (box.h - fh) * 0.5;
+    for (var i = 0; i < fig.stars.length; i++) {
+      out[i * 2] = ox + fig.stars[i][0] * fw;
+      out[i * 2 + 1] = oy + fig.stars[i][1] * fh;
+    }
+  }
+
+  /* Draw authored edges then stars. `coords` is x0,y0,x1,y1,... in screen
+     space; it may hold fewer points than fig.stars if recruitment was
+     clamped, so edges referencing missing points are skipped. */
+  function drawFigure(fig, coords, alpha, n) {
+    if (alpha <= 0) return;
+    var span = fig.stars.length > 1 ? fig.stars.length - 1 : 1;
+    var e, a, b;
+
+    ctx.lineWidth = 1;
+    for (e = 0; e < fig.edges.length; e++) {
+      a = fig.edges[e][0]; b = fig.edges[e][1];
+      if (a >= n || b >= n) continue;
+      ctx.strokeStyle = rgbaMix((a + b) / (2 * span), alpha * 0.55);
+      ctx.beginPath();
+      ctx.moveTo(coords[a * 2], coords[a * 2 + 1]);
+      ctx.lineTo(coords[b * 2], coords[b * 2 + 1]);
+      ctx.stroke();
+    }
+
+    for (e = 0; e < n; e++) {
+      /* Floor at 0.55 — the ambient-dot alpha these particles were drawn at
+         a moment ago — instead of ramping from 0 like the edge stroke does.
+         Recruited particles are skipped by both ambient loops in draw() for
+         the whole GATHER..DISPERSE span, so drawFigure() is their only
+         renderer; ramping this alongside the edge term made them blink out
+         at the DRIFT->GATHER boundary and snap back at DISPERSE->DRIFT. Do
+         not "simplify" this back to `alpha * 0.9`. */
+      ctx.fillStyle = rgbaMix(e / span, 0.55 + (0.9 - 0.55) * alpha);
+      ctx.beginPath();
+      ctx.arc(coords[e * 2], coords[e * 2 + 1], 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  /* ---------- Phase machine ---------- */
+
+  var PH_DRIFT = 0, PH_GATHER = 1, PH_HOLD = 2, PH_DISPERSE = 3;
+  var PHASE_MS = [4000, 3000, 6000, 2000];   // ~15s per animal, ~3min per cycle
+
+  var phase = PH_DRIFT;
+  var phaseT = 0;
+  var figureIndex = 0;
+  var figCount = 0;          // recruited points; may be < fig.stars.length
+  var assigned = null;       // Int32Array — particle index per star
+  var assignedMask = null;   // Uint8Array over particles
+  var targets = null;        // Float32Array 2*figCount — screen-space targets
+  var startPos = null;       // Float32Array 2*figCount — positions at gather start
+  var jitterPhase = null;    // Float32Array figCount — per-star jitter offset
+  var figCoords = null;      // Float32Array 2*figCount — scratch for drawing
+  var figAlphaMul = 1;       // cached figureBox().alpha, refreshed on recruit/resize
+  var jitterT = 0;
+
+  function easeInOut(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  /* Invariant: nulls `assigned` and `assignedMask` but deliberately leaves
+     `targets`/`startPos`/`jitterPhase`/`figCoords` allocated and stale —
+     safe only because every consumer gates on `figCount` (reset to 0 here)
+     before touching them. In particular step()'s
+     `pinned && assignedMask && ...` guard would silently un-pin an entire
+     figure if `figCount > 0` were ever reachable with `assignedMask ===
+     null`; that must never happen. */
+  function releaseAll() {
+    figCount = 0;
+    assigned = null;
+    assignedMask = null;
+  }
+
+  /* Greedily give each star target its nearest free particle. Nearest
+     assignment keeps gather paths from crossing, which reads far better than
+     random pairing for a few extra lines. Allocates once per figure (every
+     ~15s), never per frame. */
+  function recruit(fig) {
+    var n = Math.min(fig.stars.length, count);
+    figCount = n;
+    assigned = new Int32Array(n);
+    assignedMask = new Uint8Array(count);
+    targets = new Float32Array(n * 2);
+    startPos = new Float32Array(n * 2);
+    jitterPhase = new Float32Array(n);
+    figCoords = new Float32Array(n * 2);
+
+    var box = figureBox();
+    figAlphaMul = box.alpha;
+    placeFigure(fig, box, targets);
+
+    for (var s = 0; s < n; s++) {
+      var tx = targets[s * 2], ty = targets[s * 2 + 1];
+      var best = -1, bestD = Infinity;
+      for (var i = 0; i < count; i++) {
+        if (assignedMask[i]) continue;
+        var dx = px[i] - tx, dy = py[i] - ty;
+        var d = dx * dx + dy * dy;
+        if (d < bestD) { bestD = d; best = i; }
+      }
+      if (best < 0) { figCount = s; break; }   // pool exhausted — clamp
+      assignedMask[best] = 1;
+      assigned[s] = best;
+      startPos[s * 2] = px[best];
+      startPos[s * 2 + 1] = py[best];
+      jitterPhase[s] = Math.random() * Math.PI * 2;
+    }
+  }
+
+  function advancePhase(dt) {
+    /* A long main-thread stall or OS sleep/resume can hand step() a huge dt
+       (minutes, not ms) without ever firing visibilitychange or the
+       IntersectionObserver — those only cover off-screen/hidden, not a
+       visible-but-stalled tab, so start()'s `last` reset never happens.
+       Clamp here the same way the flow-field term below is already clamped
+       (Math.min(dt, 50)): without it, a single call could push phaseT past
+       the END of the phase it is about to enter, and the unclamped
+       phaseT/PHASE_MS division in step()'s GATHER branch and in
+       figureAlpha() would overshoot proportionally — particles landing far
+       past their targets, or figureAlpha() outside [0, 1], for one frame.
+       250ms is >7 frames at 30fps, so normal frame-to-frame dt is untouched;
+       a genuine backlog just drains over a few extra frames instead of
+       overshooting in one. */
+    if (dt > 250) dt = 250;
+    phaseT += dt;
+    if (phaseT < PHASE_MS[phase]) return;
+    phaseT -= PHASE_MS[phase];
+    if (phase === PH_DRIFT) {
+      if (!ZODIAC.length) { phaseT = 0; return; }  // no data: drift forever
+      phase = PH_GATHER;
+      recruit(ZODIAC[figureIndex]);
+    } else if (phase === PH_GATHER) {
+      phase = PH_HOLD;
+    } else if (phase === PH_HOLD) {
+      phase = PH_DISPERSE;
+    } else {
+      phase = PH_DRIFT;
+      releaseAll();
+      figureIndex = (figureIndex + 1) % ZODIAC.length;
+    }
+  }
+
+  /* Edge/star opacity: absent while drifting, eases in as the figure
+     assembles, full while held, fades out as it disperses. */
+  function figureAlpha() {
+    if (phase === PH_GATHER) return easeInOut(phaseT / PHASE_MS[PH_GATHER]);
+    if (phase === PH_HOLD) return 1;
+    if (phase === PH_DISPERSE) return 1 - phaseT / PHASE_MS[PH_DISPERSE];
+    return 0;
+  }
+
+  /* Assemble figure 0 and snap its particles onto their targets, so the single
+     reduced-motion frame shows a finished constellation rather than a random
+     scatter. Deterministic: always figure 0, never random. */
+  function prepareStaticFigure() {
+    if (!ZODIAC.length) return;
+    figureIndex = 0;
+    recruit(ZODIAC[0]);
+    for (var s = 0; s < figCount; s++) {
+      var i = assigned[s];
+      px[i] = targets[s * 2];
+      py[i] = targets[s * 2 + 1];
+    }
+    phase = PH_HOLD;
+    phaseT = 0;
   }
 
   /* ---------- Simulation + draw ---------- */
 
   function step(dt) {
+    advancePhase(dt);
+    jitterT += dt;
     fieldT += dt * NOISE_DRIFT;
     var d = Math.min(dt, 50) * SPEED * 0.06;
-    for (var i = 0; i < count; i++) {
+    var s, i;
+
+    if (figCount && phase === PH_GATHER) {
+      var p = easeInOut(phaseT / PHASE_MS[PH_GATHER]);
+      for (s = 0; s < figCount; s++) {
+        i = assigned[s];
+        px[i] = startPos[s * 2] + (targets[s * 2] - startPos[s * 2]) * p;
+        py[i] = startPos[s * 2 + 1] + (targets[s * 2 + 1] - startPos[s * 2 + 1]) * p;
+      }
+    } else if (figCount && phase === PH_HOLD) {
+      for (s = 0; s < figCount; s++) {
+        i = assigned[s];
+        px[i] = targets[s * 2] + Math.sin(jitterT * 0.002 + jitterPhase[s]) * 0.6;
+        py[i] = targets[s * 2 + 1] + Math.cos(jitterT * 0.0017 + jitterPhase[s]) * 0.6;
+      }
+    }
+
+    /* Everything not currently pinned follows the flow field. Recruited
+       particles are pinned only during GATHER and HOLD — during DISPERSE they
+       rejoin the field, which is what makes the figure dissolve rather than
+       blink out. */
+    var pinned = (phase === PH_GATHER || phase === PH_HOLD);
+    for (i = 0; i < count; i++) {
+      if (pinned && assignedMask && assignedMask[i]) continue;
       var angle = noise2(px[i] * NOISE_SCALE + fieldT,
                          py[i] * NOISE_SCALE - fieldT) * Math.PI * 4;
       var nx = px[i] + Math.cos(angle) * d;
@@ -133,17 +390,14 @@
     /* Connections first, so dots sit on top. */
     ctx.lineWidth = 1;
     for (var i = 0; i < count; i++) {
+      if (assignedMask && assignedMask[i]) continue;
       for (var j = i + 1; j < count; j++) {
+        if (assignedMask && assignedMask[j]) continue;
         var dx = px[i] - px[j], dy = py[i] - py[j];
         var dsq = dx * dx + dy * dy;
         if (dsq > LINK_DIST_SQ) continue;
         var falloff = 1 - Math.sqrt(dsq) / LINK_DIST;
-        var t = (tint[i] + tint[j]) * 0.5;
-        var r = eco[0] + (scifi[0] - eco[0]) * t;
-        var g = eco[1] + (scifi[1] - eco[1]) * t;
-        var b = eco[2] + (scifi[2] - eco[2]) * t;
-        ctx.strokeStyle = 'rgba(' + (r | 0) + ',' + (g | 0) + ',' + (b | 0) +
-                          ',' + (falloff * 0.28).toFixed(3) + ')';
+        ctx.strokeStyle = rgbaMix((tint[i] + tint[j]) * 0.5, falloff * 0.28);
         ctx.beginPath();
         ctx.moveTo(px[i], py[i]);
         ctx.lineTo(px[j], py[j]);
@@ -152,14 +406,21 @@
     }
 
     for (var k = 0; k < count; k++) {
-      var tk = tint[k];
-      var rr = eco[0] + (scifi[0] - eco[0]) * tk;
-      var gg = eco[1] + (scifi[1] - eco[1]) * tk;
-      var bb = eco[2] + (scifi[2] - eco[2]) * tk;
-      ctx.fillStyle = 'rgba(' + (rr | 0) + ',' + (gg | 0) + ',' + (bb | 0) + ',0.55)';
+      if (assignedMask && assignedMask[k]) continue;
+      ctx.fillStyle = rgbaMix(tint[k], 0.55);
       ctx.beginPath();
       ctx.arc(px[k], py[k], 1.6, 0, Math.PI * 2);
       ctx.fill();
+    }
+
+    if (figCount) {
+      var fig = ZODIAC[figureIndex];
+      for (var s = 0; s < figCount; s++) {
+        var fi = assigned[s];
+        figCoords[s * 2] = px[fi];
+        figCoords[s * 2 + 1] = py[fi];
+      }
+      drawFigure(fig, figCoords, figureAlpha() * figAlphaMul, figCount);
     }
   }
 
@@ -217,21 +478,22 @@
   document.addEventListener('visibilitychange', sync);
 
   if (reduceMotion.matches) {
+    prepareStaticFigure();
     draw();  // one static frame, no loop
   } else {
     sync();
   }
 
+  function afterResize() {
+    resize();
+    if (reduceMotion.matches) prepareStaticFigure();
+    if (!running) draw();
+  }
+
   if ('ResizeObserver' in window) {
-    new ResizeObserver(function () {
-      resize();
-      if (!running) draw();
-    }).observe(canvas);
+    new ResizeObserver(afterResize).observe(canvas);
   } else {
-    window.addEventListener('resize', function () {
-      resize();
-      if (!running) draw();
-    });
+    window.addEventListener('resize', afterResize);
   }
 
   if (window.PortfolioTheme) {
@@ -242,8 +504,16 @@
   }
 
   var onMotionChange = function () {
-    if (reduceMotion.matches) { stop(); draw(); }
-    else sync();
+    if (reduceMotion.matches) {
+      stop();
+      prepareStaticFigure();
+      draw();
+    } else {
+      releaseAll();
+      phase = PH_DRIFT;
+      phaseT = 0;
+      sync();
+    }
   };
   if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', onMotionChange);
   else reduceMotion.addListener(onMotionChange);

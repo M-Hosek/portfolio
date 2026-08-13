@@ -24,6 +24,7 @@ img { height: auto; }
 
 /* Typography */
 h1, h2, h3, h4 {
+  color: var(--heading);
   line-height: var(--lh-heading);
   letter-spacing: -0.015em;
   font-weight: 650;
@@ -115,6 +116,7 @@ main { flex: 1 0 auto; padding-block: var(--sp-8); }
 /* Print baseline — cv.html extends this */
 @media print {
   body { background: #fff; color: #000; }
+  h1, h2, h3, h4 { color: #000; }
   .site-header, .site-footer, .skip-link, .hero-canvas { display: none !important; }
   main { padding-block: 0; }
   a { color: #000; text-decoration: underline; }
