@@ -3,7 +3,7 @@
 (function () {
   'use strict';
 
-  var SITE_NAME = 'Your Name';
+  var SITE_NAME = 'Melissa A. Hosek, PhD';
 
   /* Source of truth for the INJECTED nav. The <noscript> fallback nav in all
      seven HTML files duplicates these destinations and must be updated in step —
@@ -11,7 +11,7 @@
   var NAV = [
     { slug: 'research', href: 'research.html', label: 'Research' },
     { slug: 'projects', href: 'projects.html', label: 'Projects' },
-    { slug: 'writing',  href: 'writing.html',  label: 'Writing' },
+    { slug: 'writing',  href: 'writing.html',  label: 'Teaching' },
     { slug: 'cv',       href: 'cv.html',       label: 'CV' },
     { slug: 'contact',  href: 'contact.html',  label: 'Contact' }
   ];
