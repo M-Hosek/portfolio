@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Contact — Melissa A. Hosek</title>
-  <meta name="description" content="Get in touch with Your Name — email, GitHub, ORCID.">
+  <meta name="description" content="Connect with Melissa A. Hosek on LinkedIn and Bluesky.">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/tokens.css">
   <link rel="stylesheet" href="assets/css/themes.css">
@@ -35,44 +35,22 @@
     </div>
 
     <section>
-       <ul class="glyph-list prose">
+      <ul class="glyph-list prose">
         <li>
           <svg class="glyph" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v6"/></svg>
-       <a href="https://www.linkedin.com/in/melissaahosek" rel="me noopener">Linkedin</a>
+          <a href="https://www.linkedin.com/in/melissaahosek" rel="me noopener">LinkedIn</a>
         </li>
         <li>
-          <svg class="glyph" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><ellipse cx="8" cy="8" rx="7" ry="3"/><circle cx="8" cy="8" r="1.6" fill="currentColor" stroke="none"/></svg>
+          <svg class="glyph" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true" focusable="false"><ellipse cx="8" cy="8" rx="7" ry="3"/><circle cx="8" cy="8" r="6.5"/></svg>
           <a href="https://bsky.app/profile/mhosek.bsky.social" rel="me noopener">Bluesky</a>
-       </li>
+        </li>
+      </ul>
     </section>
-
 
   </main>
 
   <footer class="site-footer" data-site-footer></footer>
 
   <script src="assets/js/layout.js" defer></script>
-  <script>
-    /* Progressive enhancement: the mailto link above is the real affordance. */
-    (function () {
-      var btn = document.getElementById('copy-email');
-      var link = document.getElementById('email-link');
-      var status = document.getElementById('copy-status');
-      if (!btn || !link || !navigator.clipboard) return;
-      btn.hidden = false;
-      btn.addEventListener('click', function () {
-        navigator.clipboard.writeText(link.textContent.trim()).then(function () {
-          btn.textContent = 'Copied';
-          status.textContent = 'Email address copied to clipboard.';
-          setTimeout(function () {
-            btn.textContent = 'Copy address';
-            status.textContent = '';
-          }, 2000);
-        }).catch(function () {
-          status.textContent = 'Copy failed — use the email link instead.';
-        });
-      });
-    })();
-  </script>
 </body>
 </html>
